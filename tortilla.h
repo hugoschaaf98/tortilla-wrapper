@@ -34,14 +34,14 @@ struct Delay
 	 * 
 	 * @param ms milliseconds to wait
 	 */
-	// void ms(std::uint32_t ms) { ms_(ms); }
+	void ms(std::uint32_t ms) { ms_(ms); }
 
 	/**
 	 * @brief Wait for given number of microseconds
 	 * 
 	 * @param us microseconds to wait
 	 */
-	// void us(std::uint32_t us) { us_(us); }
+	void us(std::uint32_t us) { us_(us); }
 
 	DelayFunc ms_;
 	DelayFunc us_;

@@ -29,11 +29,8 @@ int main()
 {
 	tia::Delay delay{delay_ms_dummy, delay_us_dummy};
 
-	// delay.ms(54);
-	// delay.us(1);
-
-	delay.ms_(54);
-	delay.us_(1);
+	delay.ms(54);
+	delay.us(1);
 
 	return 0;
 }
