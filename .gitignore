@@ -1,2 +1,3 @@
 # example binaries
-example/bin/
+**.out
+examples/bin
