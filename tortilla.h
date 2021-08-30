@@ -17,122 +17,228 @@
 
 namespace tia // tia is a shortcut for tortilla
 {
-    /**
-         * @brief Delay Wrapper
-         * 
-         */
-    namespace Delay_
-    {
-        using DelayFunc = void (&)(std::uint32_t);
-    }
 
-    template <Delay_::DelayFunc Ms,
-              Delay_::DelayFunc Us>
-    struct Delay
-    {
+	//-------------------------------------------------------------------------
+	// Delay Wrapper
+	//-------------------------------------------------------------------------
 
-        /**
-                 * @brief Wait for given number of milliseconds
-                 * 
-                 * @param ms milliseconds to wait
-                 */
-        void ms(std::uint32_t ms) { Ms(ms); }
+	namespace Delay_
+	{
+		using DelayFunc = void (&)(std::uint32_t);
+	}
 
-        /**
-                 * @brief Wait for given number of microseconds
-                 * 
-                 * @param us microseconds to wait
-                 */
-        void us(std::uint32_t us) { Us(us); }
-    };
+	template <Delay_::DelayFunc Ms,
+			  Delay_::DelayFunc Us>
+	struct Delay
+	{
 
-    /**
-         * @brief SPI Wrapper
-         * 
-         */
+		/**
+		 * @brief Wait for given number of milliseconds
+		 * 
+		 * @param ms milliseconds to wait
+		 */
+		void ms(std::uint32_t ms) { Ms(ms); }
 
-    namespace SPI_
-    {
-        using ChipSelectFunc = void (&)(bool);
-        using TransferFunc   = int (&)(const std::uint8_t *, std::size_t, std::uint8_t *, std::size_t);
-    }
+		/**
+		 * @brief Wait for given number of microseconds
+		 * 
+		 * @param us microseconds to wait
+		 */
+		void us(std::uint32_t us) { Us(us); }
+	};
 
-    template <SPI_::TransferFunc   Xfer,
-              SPI_::ChipSelectFunc Cs>
-    struct SPI
-    {
-        /**
-                 * @brief Construct a new SPI object
-                 * 
-                 * @param xfer  Your SPI transfer function. This function must perform reads/writes through t
-                 *                              he SPI bus and might accept null pointers as data buffers and 0 sized 
-                 *                              buffers (for transmit buffer and receive buffer as well).
-                 * @param cs    Your Chip Select function. This function must write the Chip select line of the SPI slave.
-                 * @param auto_cs
-                 */
+	//-------------------------------------------------------------------------
+	// SPI Wrapper
+	//-------------------------------------------------------------------------
 
-        SPI(bool auto_cs) : automatic_cs{auto_cs}
-        {
-        }
+	namespace SPI_
+	{
+		using ChipSelectFunc = void (&)(bool);
+		using TransferFunc = int (&)(const std::uint8_t *,
+									 std::size_t,
+									 std::uint8_t *,
+									 std::size_t);
+	}
 
-        SPI() : SPI{false}
-        {
-        }
+	/**
+	 * @brief 	Wrapper for SPI bus which enables Chip Select auto control
+	 * 
+	 * @tparam Xfer 	Your SPI transfer function. This function must perform reads/writes through t
+	 *                  he SPI bus and might accept null pointers as data buffers and 0 sized 
+	 *                  buffers (for transmit buffer and receive buffer as well).
+	 * 
+	 * @tparam Cs		Your Chip Select function. This function must write the Chip select line of the SPI slave.
+	 */
+	template <SPI_::TransferFunc Xfer,
+			  SPI_::ChipSelectFunc Cs>
+	struct SPI
+	{
+		/**
+		 * @brief Construct a new SPI object
+		 * 
+		 * @param autoCs
+		 */
+		SPI(bool autoCs) : autoCs{autoCs}
+		{
+		}
 
-        /**
-                 * @brief Transfer data through the SPI bus.
-                 * 
-                 * @tparam TxSize       Tx buffer size (might be null)
-                 * @tparam RxSize       Rx buffer size (might be null)
-                 * @param tx_buf        Buffer containing data to transmit
-                 * @param rx_buf        Buffer to hold received data
-                 * @return int 
-                 */
-        template <std::size_t TxSize, std::size_t RxSize>
-        int transfer(const std::array<std::uint8_t, TxSize> &tx_buf, std::array<std::uint8_t, RxSize> &rx_buf)
-        {
-            if (int res = 0; automatic_cs == true)
-            {
-                writeCs(false);
-                res = Xfer(tx_buf.data(), tx_buf.size(), rx_buf.data(), rx_buf.size());
-                writeCs(true);
-                return res;
-            }
-            else
-                return Xfer(tx_buf.data(), tx_buf.size(), rx_buf.data(), rx_buf.size());
-        }
+		SPI() : SPI{false}
+		{
+		}
 
-        /**
-                 * @brief Write through the SPI bus. Ignore received data.
-                 * 
-                 * @tparam TxSize       Tx buffer size (might be null)
-                 * @param tx_buf        Buffer containing data to transmit
-                 * @return int 
-                 */
-        template <std::size_t TxSize>
-        int transferTx(const std::array<std::uint8_t, TxSize> &tx_buf)
-        {
-            std::array<std::uint8_t, 0> dummy;
-            return transfer(tx_buf, dummy);
-        }
+		/**
+		 * @brief Transfer data through the SPI bus.
+		 * 
+		 * @tparam TxSize       Tx buffer size (might be null)
+		 * @tparam RxSize       Rx buffer size (might be null)
+		 * @param txBuf        Buffer containing data to transmit
+		 * @param rxBuf        Buffer to hold received data
+		 * @return int 
+		 */
+		template <std::size_t TxSize, std::size_t RxSize>
+		int transfer(const std::array<std::uint8_t, TxSize> &txBuf, std::array<std::uint8_t, RxSize> &rxBuf)
+		{
+			if (int res = 0; autoCs == true)
+			{
+				writeCs(false);
+				res = Xfer(txBuf.data(), txBuf.size(), rxBuf.data(), rxBuf.size());
+				writeCs(true);
+				return res;
+			}
+			else
+				return Xfer(txBuf.data(), txBuf.size(), rxBuf.data(), rxBuf.size());
+		}
 
-        /**
-                 * @brief Write the chip select line
-                 * 
-                 * @param enable Write Cs low if false, write Cs highif true.
-                 */
+		/**
+		 * @brief Write through the SPI bus. Ignore received data.
+		 * 
+		 * @tparam TxSize       Tx buffer size (might be null)
+		 * @param txBuf        Buffer containing data to transmit
+		 * @return int 
+		 */
+		template <std::size_t TxSize>
+		int transferTx(const std::array<std::uint8_t, TxSize> &txBuf)
+		{
+			std::array<std::uint8_t, 0> dummy;
+			return transfer(txBuf, dummy);
+		}
 
-        void writeCs(bool enable) { Cs(enable); }
+		/**
+		 * @brief Write the chip select line
+		 * 
+		 * @param enable Write Cs low if false, write Cs highif true.
+		 */
 
-        /**
-                 * @brief 
-                 * 
-                 * @param enable 
-                 */
-        void enableAutoCs(bool enable) { automatic_cs = enable; };
+		void writeCs(bool enable) { Cs(enable); }
 
-        bool automatic_cs; /// Control Chip Select during transferts
-    };
+		/**
+		 * @brief 
+		 * 
+		 * @param enable 
+		 */
+		void enableAutoCs(bool enable) { autoCs = enable; };
+
+		bool autoCs; //< Control Chip Select during transferts
+
+	}; // struct SPI
+
+	//-------------------------------------------------------------------------
+	// I2C Wrapper
+	//-------------------------------------------------------------------------
+
+	namespace I2C_
+	{
+		using TransferFunc = int (&)(std::uint16_t address,
+									 const std::uint8_t *,
+									 std::size_t,
+									 std::uint8_t *,
+									 std::size_t);
+	}
+
+	/**
+	 * @brief 	Wrapper for I2C bus
+	 * 
+	 * @tparam Xfer 	Your I2C transfer function. This function must perform reads/writes through t
+	 *                  he I2C bus and might accept null pointers as data buffers and 0 sized 
+	 *                  buffers (for transmit buffer and receive buffer as well).
+	 */
+	template <I2C_::TransferFunc Xfer>
+	struct I2C
+	{
+		/**
+		 * @brief Transfer data through the I2C bus.
+		 * 
+		 * @tparam TxSize	Tx buffer size (might be null)
+		 * @tparam RxSize	Rx buffer size (might be null)
+		 * @param address	8/10 bits slave address
+		 * @param txBuf		Buffer containing data to transmit
+		 * @param rxBuf		Buffer to hold received data
+		 * @return int 
+		 */
+		template <std::size_t TxSize, std::size_t RxSize>
+		int transfer(std::uint16_t address,
+					 const std::array<std::uint8_t, TxSize> &txBuf,
+					 std::array<std::uint8_t, RxSize> &rxBuf)
+		{
+			return Xfer(address, txBuf.data(), txBuf.size(), rxBuf.data(), rxBuf.size());
+		}
+
+		/**
+		 * @brief Write data
+		 * 
+		 * @tparam TxSize	Tx buffer size (might be null)
+		 * @param address	8/10 bits slave address
+		 * @param txBuf		Buffer containing data to transmit
+		 * @return int 
+		 */
+		template <std::size_t TxSize>
+		int transferTx(std::uint16_t address, const std::array<std::uint8_t, TxSize> &txBuf)
+		{
+			std::array<std::uint8_t, 0> dummy;
+			return transfer(address, txBuf, dummy);
+		}
+
+		/**
+		 * @brief Write a byte
+		 * 
+		 * @param address 	8/10 bits slave address
+		 * @param byte 		Byte to transmit
+		 * @return int 
+		 */
+		int transferTx(std::uint16_t address, std::uint8_t byte)
+		{
+			return Xfer(address, nullptr, 0, &byte, 1);
+		}
+
+		/**
+		 * @brief Receive data
+		 * 
+		 * @tparam RxSize	Rx buffer size (might be null)
+		 * @param address	8/10 bits slave address
+		 * @param rxBuf		Buffer in which to store received data
+		 * @return int 
+		 */
+		template <std::size_t RxSize>
+		int transferRx(std::uint16_t address, std::array<std::uint8_t, RxSize> &rxBuf)
+		{
+			std::array<std::uint8_t, 0> dummy;
+			return transfer(address, dummy, rxBuf);
+		}
+
+		/**
+		 * @brief Receive a byte
+		 * 
+		 * @param address	8/10 bits slave address
+		 * @return std::uint8_t The received byte
+		 */
+		std::uint8_t transferRx(std::uint16_t address)
+		{
+			std::uint8_t data = 0x00;
+			Xfer(address, &data, 1, nullptr, 0);
+			return data;
+		}
+
+	}; // struct I2C
 
 } // namespace tia
 
