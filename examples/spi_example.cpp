@@ -37,7 +37,12 @@ int main()
 	std::uint8_t dummy_register_address = 0x01; // Slave's register at address 0x01  
 
 	// Create a SPI object
-	tia::SPI my_spi{spi_transfert_dummy, spi_cs_dummy, true}; // setp automatic CS control
+	tia::SPI my_spi {
+					spi_transfert_dummy, 
+					[](bool enable)	{
+						std::cout<<__func__<<"("<<enable<<") invoked\n";
+					},
+					true }; // setp automatic CS control
 	// tia::SPI my_spi{spi_transfert_dummy, spi_cs_dummy, false}; // manual cs control
 	
 	// Test tia::SPI::writeCs()

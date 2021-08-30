@@ -13,6 +13,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <functional>
 #include <array>
 
 namespace tia // tia is a shortcut for tortilla
@@ -24,7 +25,8 @@ namespace tia // tia is a shortcut for tortilla
  */
 struct Delay
 {
-	using DelayFunc = void(&)(std::uint32_t);
+	// using DelayFunc = void(&)(std::uint32_t);
+	using DelayFunc = std::function<void(std::uint32_t)>;
 
 	Delay(DelayFunc delay_ms, DelayFunc delay_us): ms_{delay_ms}, us_{delay_us}
 	{}
@@ -53,8 +55,10 @@ struct Delay
  */
 struct SPI
 {
-	using ChipSelectFunc = void(&)(bool);
-	using TransferFunc = int(&)(const std::uint8_t*, std::size_t, std::uint8_t*, std::size_t);
+	// using ChipSelectFunc = void(&)(bool);
+	// using TransferFunc = int(&)(const std::uint8_t*, std::size_t, std::uint8_t*, std::size_t);
+	using ChipSelectFunc = std::function<void(bool)>;
+	using TransferFunc = std::function<int(const std::uint8_t*, std::size_t, std::uint8_t*, std::size_t)>;
 
 	/**
 	 * @brief Construct a new SPI object

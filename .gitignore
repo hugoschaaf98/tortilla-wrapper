@@ -1,2 +1,3 @@
-# example binaries
-example/bin/
+# Ignore examples binaries
+**.out
+examples/bin
