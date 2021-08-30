@@ -9,61 +9,61 @@
  * @copyright Copyright (c) 2021
  * 
  */
-#include <iostream>
-#include <cstdint>
 #include <array>
+#include <cstdint>
+#include <iostream>
 
 #include "tortilla.h"
 
 // User defined functions
-void spi_cs_dummy(bool enable)
+void spiCsDummy(bool enable)
 {
-	std::cout<<__func__<<"("<<enable<<") invoked\n";
+    std::cout << __func__ << "(" << enable << ") invoked\n";
 }
 
-int spi_transfert_dummy(const std::uint8_t *tx_buf, size_t tx_size, std::uint8_t *rx_buf, size_t rx_size)
+int spiTransfertDummy(const std::uint8_t *tx_buf, size_t tx_size, std::uint8_t *rx_buf, size_t rx_size)
 {
-	(void)tx_buf; (void)rx_buf;
-	std::cout<<__func__<<"(...,"<<tx_size<<','<<"...,"<<rx_size<<") invoked\n";
-	return 0;
+    (void)tx_buf;
+    (void)rx_buf;
+    std::cout << __func__ << "(...," << tx_size << ',' << "...," << rx_size << ") invoked\n";
+    return 0;
 }
-
 
 int main()
 {
-	std::array<std::uint8_t, 10> tx_buf0, rx_buf0;
-	std::array<std::uint8_t, 15> tx_buf1, rx_buf1;
+    constexpr std::uint8_t dummyRegisterAddress = 0x01; // Slave's register at address 0x01
 
-	std::uint8_t dummy_register_address = 0x01; // Slave's register at address 0x01  
+    std::array<std::uint8_t, 10> txBuf0, rxBuf0;
+    std::array<std::uint8_t, 15> txBuf1, rxBuf1;
 
-	// Create a SPI object
-	tia::SPI my_spi{spi_transfert_dummy, spi_cs_dummy, true}; // setp automatic CS control
-	// tia::SPI my_spi{spi_transfert_dummy, spi_cs_dummy, false}; // manual cs control
-	
-	// Test tia::SPI::writeCs()
-	std::cout<<"Test tia::SPI::writeCs()\n";
-	my_spi.writeCs(false); // Select the slave
+    // Create a SPI object
+    tia::SPI<spiTransfertDummy, spiCsDummy> mySpi{true}; // setp automatic CS control
+    // tia::SPI<spiTransfertDummy, spiCsDummy> mySpi{false}; // manual cs control
 
-	// Setup tx buffer
-	tx_buf0[0] = dummy_register_address;
-	tx_buf0[1] = 54; // Dummy data to write to the register (for example, obviously in this example it's 100% fake)
+    // Test tia::SPI::writeCs()
+    std::cout << "Test tia::SPI::writeCs()\n";
+    mySpi.writeCs(false); // Select the slave
 
-	// Test tia::SPI::transfer() with different sized buffers
-	std::cout<<"\nTest tia::SPI::transfer() with different sized buffers\n";
-	my_spi.transfer(tx_buf0, rx_buf0);
-	my_spi.transfer(tx_buf1, rx_buf0);
+    // Setup tx buffer
+    txBuf0[0] = dummyRegisterAddress;
+    txBuf0[1] = 54; // Dummy data to write to the register (for example, obviously in this example it's 100% fake)
 
-	// Test tia::SPI::transfer() with a reference rvalue as tx buffer
-	std::cout<<"\nTest tia::SPI::transfer() with a reference rvalue as tx buffer\n";
-	my_spi.transfer(std::array<std::uint8_t, 2> {0x04,5} , rx_buf1);
+    // Test tia::SPI::transfer() with different sized buffers
+    std::cout << "\nTest tia::SPI::transfer() with different sized buffers\n";
+    mySpi.transfer(txBuf0, rxBuf0);
+    mySpi.transfer(txBuf1, rxBuf0);
 
-	// Test tia::SPI::transferTx()
-	std::cout<<"\nTest tia::SPI::transferTx()\n";
-	my_spi.transferTx(tx_buf1);
+    // Test tia::SPI::transfer() with a reference rvalue as tx buffer
+    std::cout << "\nTest tia::SPI::transfer() with a reference rvalue as tx buffer\n";
+    mySpi.transfer(std::array<std::uint8_t, 2>{0x04, 5}, rxBuf1);
 
-	// We can use boolean values too
-	std::cout<<"\nTest tia::SPI::writeCs() with boolean equivalent values\n";
-	my_spi.writeCs(1); // Deselect the slave
+    // Test tia::SPI::transferTx()
+    std::cout << "\nTest tia::SPI::transferTx()\n";
+    mySpi.transferTx(txBuf1);
 
-	return 0;
+    // We can use boolean values too
+    std::cout << "\nTest tia::SPI::writeCs() with boolean equivalent values\n";
+    mySpi.writeCs(1); // Deselect the slave
+
+    return 0;
 }

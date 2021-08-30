@@ -9,31 +9,28 @@
  * @copyright Copyright (c) 2021
  * 
  */
-#include <iostream>
 #include <cstdint>
+#include <iostream>
 
 #include "tortilla.h"
 
 // User defined functions
-void delay_us_dummy(std::uint32_t us)
+void delayUsDummy(std::uint32_t us)
 {
-	std::cout<<__func__<<"("<<us<<") invoked\n";
+    std::cout << __func__ << "(" << us << ") invoked\n";
 }
 
-void delay_ms_dummy(std::uint32_t ms)
+void delayMsDummy(std::uint32_t ms)
 {
-	std::cout<<__func__<<"("<<ms<<") invoked\n";
+    std::cout << __func__ << "(" << ms << ") invoked\n";
 }
 
 int main()
 {
-	tia::Delay delay{delay_ms_dummy, delay_us_dummy};
+    tia::Delay<delayMsDummy, delayUsDummy> myDelay{};
 
-	// delay.ms(54);
-	// delay.us(1);
+    myDelay.ms(54);
+    myDelay.us(1);
 
-	delay.ms_(54);
-	delay.us_(1);
-
-	return 0;
+    return 0;
 }
