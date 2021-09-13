@@ -21,10 +21,11 @@ void spiCsDummy(bool enable)
     std::cout << __func__ << "(" << enable << ") invoked\n";
 }
 
-int spiTransfertDummy(const std::uint8_t *tx_buf, size_t tx_size, std::uint8_t *rx_buf, size_t rx_size)
+int spiTransfertDummy([[maybe_unused]] const std::uint8_t *tx_buf,
+                      [[maybe_unused]] size_t              tx_size,
+                      [[maybe_unused]] std::uint8_t *      rx_buf,
+                      [[maybe_unused]] size_t              rx_size)
 {
-    (void)tx_buf;
-    (void)rx_buf;
     std::cout << __func__ << "(...," << tx_size << ',' << "...," << rx_size << ") invoked\n";
     return 0;
 }
@@ -59,7 +60,7 @@ int main()
 
     // Test tia::SPI::transferTx()
     std::cout << "\nTest tia::SPI::transferTx()\n";
-    mySpi.transferTx(txBuf1);
+    mySpi.write(txBuf1);
 
     // We can use boolean values too
     std::cout << "\nTest tia::SPI::writeCs() with boolean equivalent values\n";

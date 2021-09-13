@@ -15,12 +15,12 @@
 #include "tortilla.h"
 
 // User defined functions
-void delayUsDummy(std::uint32_t us)
+void delayUsDummy([[maybe_unused]] std::uint32_t us)
 {
     std::cout << __func__ << "(" << us << ") invoked\n";
 }
 
-void delayMsDummy(std::uint32_t ms)
+void delayMsDummy([[maybe_unused]] std::uint32_t ms)
 {
     std::cout << __func__ << "(" << ms << ") invoked\n";
 }
