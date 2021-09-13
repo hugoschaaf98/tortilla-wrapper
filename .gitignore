@@ -1,3 +1,6 @@
 # example binaries
 **.out
 examples/bin
+
+# vscode config
+.vscode/
